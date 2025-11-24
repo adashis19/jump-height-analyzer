@@ -6,18 +6,18 @@ from jump_analysis import analyze_jump_video
 st.set_page_config(page_title="Jump Height Analyzer", layout="centered")
 
 st.title("🏃‍♂️ Jump Height Analyzer")
-
 st.write("Upload a jump video and I'll detect take-off, landing, flight time, and jump height.")
 
 uploaded_file = st.file_uploader("Upload video", type=["mp4", "mov", "avi", "mkv"])
 
 if uploaded_file is not None:
-    # Save uploaded file to a temporary location
+    # Save uploaded file to a temporary path
     suffix = Path(uploaded_file.name).suffix
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(uploaded_file.read())
         tmp_path = tmp.name
 
+    st.subheader("Original video")
     st.video(tmp_path)
 
     with st.spinner("Analyzing jump..."):
@@ -26,7 +26,6 @@ if uploaded_file is not None:
     st.success("Analysis complete!")
 
     st.subheader("Results")
-
     st.write(f"**FPS:** {res['fps']:.2f}")
     st.write(f"**Total frames:** {res['total_frames']}")
 
@@ -39,9 +38,23 @@ if uploaded_file is not None:
 
     st.subheader("Annotated video")
 
-    annotated_path = res["annotated_video_path"]
-    if annotated_path is not None:
-        st.video(annotated_path)
+    annotated_path = res.get("annotated_video_path", None)
+    if annotated_path is not None and Path(annotated_path).exists():
+        # Read video as bytes
+        with open(annotated_path, "rb") as f:
+            video_bytes = f.read()
+
+        # Show in the app
+        st.video(video_bytes)
+
+        # Download button
+        st.download_button(
+            label="⬇️ Download annotated video",
+            data=video_bytes,
+            file_name=Path(annotated_path).name,
+            mime="video/mp4"
+        )
+
         st.caption("Annotated video with pose, foot_y, ankle angle, TAKEOFF and LANDING markers.")
     else:
-        st.write("Annotated video was not generated.")
+        st.write("Annotated video was not generated or file not found.")
