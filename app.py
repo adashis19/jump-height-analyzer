@@ -36,18 +36,13 @@ if uploaded_file is not None:
     st.write(f"**Flight time:** {res['flight_time_s']:.4f} s")
     st.write(f"**Jump height:** {res['jump_height_m']:.3f} m ({res['jump_height_cm']:.1f} cm)")
 
-    st.subheader("Annotated video")
+    st.subheader("Annotated video (download)")
 
     annotated_path = res.get("annotated_video_path", None)
     if annotated_path is not None and Path(annotated_path).exists():
-        # Read video as bytes
         with open(annotated_path, "rb") as f:
             video_bytes = f.read()
 
-        # Show in the app
-        st.video(video_bytes)
-
-        # Download button
         st.download_button(
             label="⬇️ Download annotated video",
             data=video_bytes,
@@ -55,6 +50,6 @@ if uploaded_file is not None:
             mime="video/mp4"
         )
 
-        st.caption("Annotated video with pose, foot_y, ankle angle, TAKEOFF and LANDING markers.")
+        st.caption("Download the annotated video with pose, foot_y, ankle angle, TAKEOFF and LANDING markers.")
     else:
         st.write("Annotated video was not generated or file not found.")
